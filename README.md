@@ -31,3 +31,23 @@ Bienvenue sur le **Projet POTI** ! Ce dépôt héberge une application web déve
 - **React-Router** : Navigation multi-pages.
 - **Bootstrap & React-Bootstrap** : Style et composants UI.
 - **Axios** : Communication avec les APIs.
+
+
+### Installation 
+**Pour le développment**
+
+#### Backend 
+- **Installer votre IDE favoris** : Je vous recommande VSCODE puisque le projet contient aussi la partie frontend. (IntelliJI devrait fonctionner également) 
+- **Installer MAVEN** : Si vous n'avez pas maven d'installer veuillez l'installer, pour vérifier si vous avez maven, vous pouvez taper dans la console : <code>mvn --version</code>
+
+#### Frontend
+- **Installer votre IDE favoris** : Je vous recommande VSCODE, toutefois si vous souhaitez rester dans l'écosystème Jetbrains, WebStorm est très bien :) 
+- **Installer NPM & Node.js** : Vérifier si vous avez npm d'installer, pour ce faire, vous pouvez taper dans la console : <code> npm --version</code> (Node.js installe automatiquement npm) 
+- **Télécharger les dépendances** : Une fois le projet <strong>Forker</strong> et sur votre machine, vous aller devoir naviguer dans la partie client : 
+    ```
+    cd client
+    npm install
+    npm run dev
+    ```
+Ces commandes vous permettront de télécharger les dépendances du projet. (Faite la commande une seul fois) 
+La commande ```npm run dev``` permet de partir votre projet en mode développment, (hot-reloading) et un serveur de test. 
