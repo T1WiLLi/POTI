@@ -9,14 +9,16 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import jakarta.servlet.http.HttpServletRequest;
+import poti.project.server.exceptions.ServerException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public String handleException(Exception ex, HttpServletRequest request, Model model) {
-        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        HttpStatus status = (ex instanceof ServerException serverEx) ? serverEx.getStatus()
+                : HttpStatus.INTERNAL_SERVER_ERROR;
         String message = URLEncoder.encode(ex.getMessage(), StandardCharsets.UTF_8);
-        return "redirect:/error?HttpStatus=" + status.value() + "&Message=" + message;
+        return String.format("/error?HttpStatus=%d&Message=%s&Path=%s", status, message, request.getPathInfo());
     }
 }
