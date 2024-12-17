@@ -10,12 +10,22 @@ jobs:
     steps:
       - name: Send notification according to labels
         run: |
-          # Convert the list of labels into JSON
-          LABELS_JSON=$(echo "${{ toJson(github.event.issue.labels) }}")
+          # Manually define LABELS_JSON with single quotes
+          LABELS_JSON='[
+            {
+              "color": "1CA452",
+              "default": false,
+              "description": "For issues specific to the React frontend.",
+              "id": 7881999609,
+              "name": "frontend",
+              "node_id": "LA_kwDONdZGMc8AAAAB1c3E-Q",
+              "url": "https://api.github.com/repos/T1WiLLi/POTI/labels/frontend"
+            }
+          ]'
 
           # Gather info about the current issue
-          ISSUE_TITLE="${{ github.event.issue.title }}"
-          ISSUE_URL="${{ github.event.issue.html_url }}"
+          ISSUE_TITLE="Test workflows discord 2"
+          ISSUE_URL="https://github.com/T1WiLLi/POTI/issues/7"
 
           # Check if "frontend" label is present
           if echo "$LABELS_JSON" | grep -qi "frontend"; then
@@ -29,7 +39,7 @@ jobs:
                   "color": 3066993
                 }]
               }' \
-              "${{ secrets.DISCORD_WEBHOOK_FRONTEND }}"
+              "***"   # Replace with your front-end webhook secret
 
           # Check if "backend" label is present
           elif echo "$LABELS_JSON" | grep -qi "backend"; then
@@ -43,7 +53,7 @@ jobs:
                   "color": 15105570
                 }]
               }' \
-              "${{ secrets.DISCORD_WEBHOOK_BACKEND }}"
+              "***"   # Replace with your back-end webhook secret
 
           # Otherwise, send to the default Discord webhook
           else
@@ -57,4 +67,4 @@ jobs:
                   "color": 7506394
                 }]
               }' \
-              "${{ secrets.DISCORD_WEBHOOK }}"
+              "***"   # Replace with your default webhook secret
