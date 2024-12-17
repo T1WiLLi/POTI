@@ -1,0 +1,52 @@
+name: Discord Issue Notifications
+
+on:
+  issues:
+    types: [opened, edited, reopened]
+
+jobs:
+  notify-discord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Envoyer la notification selon les labels
+        run: |
+          LABELS_JSON=$(echo "${{ toJson(github.event.issue.labels) }}")
+
+          ISSUE_TITLE="${{ github.event.issue.title }}"
+          ISSUE_URL="${{ github.event.issue.html_url }}"
+
+          if echo "$LABELS_JSON" | grep -qi "frontend"; then
+            curl -X POST \
+              -H "Content-Type: application/json" \
+              -d '{
+                "username": "GitHub Issues Bot",
+                "embeds": [{
+                  "title": "Nouvelle issue FRONTEND",
+                  "description": "**Titre**: '"$ISSUE_TITLE"'\n**Lien**: '"$ISSUE_URL"'"
+                }]
+              }' \
+              "${{ secrets.DISCORD_WEBHOOK_FRONTEND }}"
+
+          elif echo "$LABELS_JSON" | grep -qi "backend"; then
+            curl -X POST \
+              -H "Content-Type: application/json" \
+              -d '{
+                "username": "GitHub Issues Bot",
+                "embeds": [{
+                  "title": "Nouvelle issue BACKEND",
+                  "description": "**Titre**: '"$ISSUE_TITLE"'\n**Lien**: '"$ISSUE_URL"'"
+                }]
+              }' \
+              "${{ secrets.DISCORD_WEBHOOK_BACKEND }}"
+
+          else
+            curl -X POST \
+              -H "Content-Type: application/json" \
+              -d '{
+                "username": "GitHub Issues Bot",
+                "embeds": [{
+                  "title": "Nouvelle issue (Autre)",
+                  "description": "**Titre**: '"$ISSUE_TITLE"'\n**Lien**: '"$ISSUE_URL"'"
+                }]
+              }' \
+              "${{ secrets.DISCORD_WEBHOOK }}"

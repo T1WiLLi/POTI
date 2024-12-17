@@ -5,8 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 /**
- * The {@code HomeController} class handles routing for single-page applications
- * (SPAs)
+ * The {@code HomeController} class handles routing for react applications
  * by forwarding requests to the main {@code index.html} page.
  * This ensures that all routes, except those matching a specific pattern, are
  * handled correctly.
