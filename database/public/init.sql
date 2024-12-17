@@ -27,3 +27,16 @@ CREATE TABLE inventory (
     quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity >= 0),
     acquired_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 )
+
+CREATE INDEX idx_cards_rarity ON cards(rarity);
+CREATE INDEX idx_cards_energy_points ON cards(energy_points);
+CREATE INDEX idx_cards_mhp ON cards(mhp);
+
+CREATE INDEX idx_inventory_profile_id ON inventory(profile_id);
+CREATE INDEX idx_inventory_card_id ON inventory(card_id);
+
+CREATE INDEX idx_auth_logs_login_time ON user_authentification_logs(login_time);
+CREATE INDEX idx_auth_logs_success ON user_authentification_logs(is_successful);
+
+CREATE INDEX idx_wallet_currency_type ON user_wallet(currency_type);
+
