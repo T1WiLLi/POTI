@@ -21,6 +21,12 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
+        if (request.getRequestURI().contains("/error") || request.getRequestURI().contains("/handle-error")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String clientIp = request.getRemoteAddr();
         RateLimit rateLimit = clientRateLimits.computeIfAbsent(clientIp, k -> new RateLimit());
 
