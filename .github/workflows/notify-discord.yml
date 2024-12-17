@@ -14,7 +14,6 @@ jobs:
           # Use single quotes so internal double quotes don't break the script
           LABELS_JSON='[
             {
-              "color": "1CA452",
               "default": false,
               "description": "For issues specific to the React frontend.",
               "id": 7881999609,
