@@ -10,25 +10,18 @@ jobs:
     steps:
       - name: Send notification according to labels
         run: |
-          # Manually define LABELS_JSON with single quotes
-          LABELS_JSON='[
-            {
-              "color": "1CA452",
-              "default": false,
-              "description": "For issues specific to the React frontend.",
-              "id": 7881999609,
-              "name": "frontend",
-              "node_id": "LA_kwDONdZGMc8AAAAB1c3E-Q",
-              "url": "https://api.github.com/repos/T1WiLLi/POTI/labels/frontend"
-            }
-          ]'
+          # Use the *real* labels from GitHub event data
+          LABELS_JSON="${{ toJson(github.event.issue.labels) }}"
 
           # Gather info about the current issue
-          ISSUE_TITLE="Test workflows discord 2"
-          ISSUE_URL="https://github.com/T1WiLLi/POTI/issues/7"
+          ISSUE_TITLE="${{ github.event.issue.title }}"
+          ISSUE_URL="${{ github.event.issue.html_url }}"
+
+          echo "Labels JSON: $LABELS_JSON"
 
           # Check if "frontend" label is present
           if echo "$LABELS_JSON" | grep -qi "frontend"; then
+            echo "Sending to FRONTEND webhook..."
             curl -X POST \
               -H "Content-Type: application/json" \
               -d '{
@@ -39,10 +32,11 @@ jobs:
                   "color": 3066993
                 }]
               }' \
-              "***"   # Replace with your front-end webhook secret
+              "${{ secrets.DISCORD_WEBHOOK_FRONTEND }}"
 
           # Check if "backend" label is present
           elif echo "$LABELS_JSON" | grep -qi "backend"; then
+            echo "Sending to BACKEND webhook..."
             curl -X POST \
               -H "Content-Type: application/json" \
               -d '{
@@ -53,10 +47,11 @@ jobs:
                   "color": 15105570
                 }]
               }' \
-              "***"   # Replace with your back-end webhook secret
+              "${{ secrets.DISCORD_WEBHOOK_BACKEND }}"
 
           # Otherwise, send to the default Discord webhook
           else
+            echo "Sending to DEFAULT webhook..."
             curl -X POST \
               -H "Content-Type: application/json" \
               -d '{
@@ -67,4 +62,4 @@ jobs:
                   "color": 7506394
                 }]
               }' \
-              "***"   # Replace with your default webhook secret
+              "${{ secrets.DISCORD_WEBHOOK }}"
