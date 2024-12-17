@@ -10,12 +10,24 @@ jobs:
     steps:
       - name: Send notification according to labels
         run: |
-          # Use the *real* labels from GitHub event data
-          LABELS_JSON="${{ toJson(github.event.issue.labels) }}"
+          # Example: Hardcode LABELS_JSON for local testing
+          LABELS_JSON='[
+            {
+              "color": "1CA452",
+              "default": false,
+              "description": "For issues specific to the React frontend.",
+              "id": 7881999609,
+              "name": "frontend",
+              "node_id": "LA_kwDONdZGMc8AAAAB1c3E-Q",
+              "url": "https://api.github.com/repos/T1WiLLi/POTI/labels/frontend"
+            }
+          ]'
 
-          # Gather info about the current issue
-          ISSUE_TITLE="${{ github.event.issue.title }}"
-          ISSUE_URL="${{ github.event.issue.html_url }}"
+          # Or uncomment this to use real GitHub event labels:
+          # LABELS_JSON='${{ toJson(github.event.issue.labels) }}'
+
+          ISSUE_TITLE="Test workflows discord 4"
+          ISSUE_URL="https://github.com/T1WiLLi/POTI/issues/7"
 
           echo "Labels JSON: $LABELS_JSON"
 
