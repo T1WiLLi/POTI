@@ -8,13 +8,16 @@ jobs:
   notify-discord:
     runs-on: ubuntu-latest
     steps:
-      - name: Envoyer la notification selon les labels
+      - name: Send notification according to labels
         run: |
+          # Convert the list of labels into JSON
           LABELS_JSON=$(echo "${{ toJson(github.event.issue.labels) }}")
 
+          # Gather info about the current issue
           ISSUE_TITLE="${{ github.event.issue.title }}"
           ISSUE_URL="${{ github.event.issue.html_url }}"
 
+          # Check if "frontend" label is present
           if echo "$LABELS_JSON" | grep -qi "frontend"; then
             curl -X POST \
               -H "Content-Type: application/json" \
@@ -22,11 +25,13 @@ jobs:
                 "username": "GitHub Issues Bot",
                 "embeds": [{
                   "title": "Nouvelle issue FRONTEND",
-                  "description": "**Titre**: '"$ISSUE_TITLE"'\n**Lien**: '"$ISSUE_URL"'"
+                  "description": "**Titre**: '"$ISSUE_TITLE"'\n**Lien**: '"$ISSUE_URL"'",
+                  "color": 3066993
                 }]
               }' \
               "${{ secrets.DISCORD_WEBHOOK_FRONTEND }}"
 
+          # Check if "backend" label is present
           elif echo "$LABELS_JSON" | grep -qi "backend"; then
             curl -X POST \
               -H "Content-Type: application/json" \
@@ -34,11 +39,13 @@ jobs:
                 "username": "GitHub Issues Bot",
                 "embeds": [{
                   "title": "Nouvelle issue BACKEND",
-                  "description": "**Titre**: '"$ISSUE_TITLE"'\n**Lien**: '"$ISSUE_URL"'"
+                  "description": "**Titre**: '"$ISSUE_TITLE"'\n**Lien**: '"$ISSUE_URL"'",
+                  "color": 15105570
                 }]
               }' \
               "${{ secrets.DISCORD_WEBHOOK_BACKEND }}"
 
+          # Otherwise, send to the default Discord webhook
           else
             curl -X POST \
               -H "Content-Type: application/json" \
@@ -46,7 +53,8 @@ jobs:
                 "username": "GitHub Issues Bot",
                 "embeds": [{
                   "title": "Nouvelle issue (Autre)",
-                  "description": "**Titre**: '"$ISSUE_TITLE"'\n**Lien**: '"$ISSUE_URL"'"
+                  "description": "**Titre**: '"$ISSUE_TITLE"'\n**Lien**: '"$ISSUE_URL"'",
+                  "color": 7506394
                 }]
               }' \
               "${{ secrets.DISCORD_WEBHOOK }}"
