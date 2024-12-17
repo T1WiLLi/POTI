@@ -10,7 +10,8 @@ jobs:
     steps:
       - name: Send notification according to labels
         run: |
-          # Example: Hardcode LABELS_JSON for local testing
+          # Hardcode LABELS_JSON for local testing:
+          # Use single quotes so internal double quotes don't break the script
           LABELS_JSON='[
             {
               "color": "1CA452",
@@ -23,7 +24,7 @@ jobs:
             }
           ]'
 
-          # Or uncomment this to use real GitHub event labels:
+          # Or use real GitHub labels from the event:
           # LABELS_JSON='${{ toJson(github.event.issue.labels) }}'
 
           ISSUE_TITLE="Test workflows discord 4"
@@ -46,7 +47,6 @@ jobs:
               }' \
               "${{ secrets.DISCORD_WEBHOOK_FRONTEND }}"
 
-          # Check if "backend" label is present
           elif echo "$LABELS_JSON" | grep -qi "backend"; then
             echo "Sending to BACKEND webhook..."
             curl -X POST \
@@ -61,7 +61,6 @@ jobs:
               }' \
               "${{ secrets.DISCORD_WEBHOOK_BACKEND }}"
 
-          # Otherwise, send to the default Discord webhook
           else
             echo "Sending to DEFAULT webhook..."
             curl -X POST \
