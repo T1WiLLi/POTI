@@ -25,7 +25,7 @@ public class HomeController {
      * @return a string forwarding to {@code /index.html}.
      */
     @GetMapping(value = "/{path:[^\\.]*}")
-    public String home(@PathVariable String path) {
+    public String home(@PathVariable(required = false) String path) {
         return "forward:/index.html";
     }
 }

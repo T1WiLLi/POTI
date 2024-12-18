@@ -1,42 +1,106 @@
-DROP SCHEMA IF EXISTS public;
+DROP SCHEMA IF EXISTS public CASCADE;
 CREATE SCHEMA public;
 SET search_path TO public;
 
--- Tables reliées à la base de données.
-
-CREATE TABLE profil (
-    id PRIMARY KEY REFERENCES private.users(id) ON DELETE CASCADE,
+-- Users Table:
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    birth_date DATE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL, -- Hashed password
+    email_verified BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE users_email_verification (
+    id PRIMARY KEY REFERENCES users(id),
+    verification_code VARCHAR(255) NOT NULL,
+    verification_code_expires_at TIMESTAMP NOT NULL
+);
+
+-- Roles Table
+CREATE TABLE roles (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description TEXT
+);
+
+-- User Roles: Many-to-many relationship
+CREATE TABLE user_roles (
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    role_id INTEGER NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+    assigned_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, role_id)
+);
+
+-- Wallet Table
+CREATE TABLE user_wallet (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    balance INTEGER NOT NULL DEFAULT 0 CHECK (balance >= 0),
+    currency_type VARCHAR(50) NOT NULL DEFAULT 'in-game-credits'
+);
+
+-- User Authentication Logs
+CREATE TABLE user_authentication_logs (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    login_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ip_address INET,
+    device_info TEXT,
+    is_successful BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+-- Cards Table
 CREATE TABLE cards (
-    id SERIAL PRIMARY KEY, 
+    id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description TEXT,
     rarity VARCHAR(20) NOT NULL CHECK (rarity IN ('common', 'gold', 'diamond')),
-    energy_points INTEGER NOT NULL CHECK (energy_points >= 0),
-    mhp INTEGER NOT NULL CHECK (mhp >= 0),
+    energy_cost INTEGER NOT NULL CHECK (energy_cost >= 0),
+    hp INTEGER NOT NULL CHECK (hp >= 0),
+    damage INTEGER NOT NULL CHECK (damage >= 0),
     image_url VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-)
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
+-- Inventory Table: Tracks user-owned cards
 CREATE TABLE inventory (
     id SERIAL PRIMARY KEY,
-    profile_id INTEGER UNIQUE NOT NULL REFERENCES profil(id) ON DELETE CASCADE,
-    card_id INTEGER UNIQUE NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    card_id INTEGER NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
     quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity >= 0),
     acquired_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-)
+    UNIQUE (user_id, card_id) -- Prevent duplicate card entries for a user
+);
 
+-- Marketplace Table: Manages card listings for sale
+CREATE TABLE marketplace (
+    id SERIAL PRIMARY KEY,
+    seller_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    card_id INTEGER NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
+    price INTEGER NOT NULL CHECK (price > 0), -- Price must be a positive integer
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20) NOT NULL DEFAULT 'available' CHECK (status IN ('available', 'sold', 'removed'))
+);
+
+-- Users
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_username ON users(username);
+
+-- Cards
 CREATE INDEX idx_cards_rarity ON cards(rarity);
-CREATE INDEX idx_cards_energy_points ON cards(energy_points);
-CREATE INDEX idx_cards_mhp ON cards(mhp);
+CREATE INDEX idx_cards_energy_cost ON cards(energy_cost);
+CREATE INDEX idx_cards_hp ON cards(hp);
 
-CREATE INDEX idx_inventory_profile_id ON inventory(profile_id);
+-- Inventory
+CREATE INDEX idx_inventory_user_id ON inventory(user_id);
 CREATE INDEX idx_inventory_card_id ON inventory(card_id);
 
-CREATE INDEX idx_auth_logs_login_time ON user_authentification_logs(login_time);
-CREATE INDEX idx_auth_logs_success ON user_authentification_logs(is_successful);
-
-CREATE INDEX idx_wallet_currency_type ON user_wallet(currency_type);
-
+-- Marketplace
+CREATE INDEX idx_marketplace_status ON marketplace(status);
+CREATE INDEX idx_marketplace_seller_id ON marketplace(seller_id);

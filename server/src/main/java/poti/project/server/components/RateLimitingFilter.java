@@ -12,6 +12,18 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+/**
+ * 
+ * The filter is used to handle Ddos attacks. It checks if the request is coming
+ * from a known ip address. If it is, it will compare the latest request time
+ * with the time of the current request. If the request time is within the last
+ * 10ms , it will block the request.
+ * 
+ * @apiNote This filter is used to handle therequests to the server. It checks
+ *          if the request has been spamming the server, it does not prevent the
+ *          request from the frontend itself.
+ * @author William Beaudin
+ */
 @Component
 public class RateLimitingFilter extends OncePerRequestFilter {
     private static final long MAX_REQUESTS_PER_MINUTES = 100;
@@ -22,7 +34,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        if (request.getRequestURI().contains("/error") || request.getRequestURI().contains("/handle-error")) {
+        if (isExcludedPath(request.getRequestURI())) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -32,12 +44,11 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
         synchronized (rateLimit) {
             long currentTime = System.currentTimeMillis();
-            if (currentTime - rateLimit.lastRequestTime > TIME_FRAME_MS) {
-                rateLimit.lastRequestTime = currentTime;
-                rateLimit.requestCount = 1;
+            if (isTimeFrameExpired(rateLimit, currentTime)) {
+                resetRateLimit(rateLimit, currentTime);
             } else {
                 rateLimit.requestCount++;
-                if (rateLimit.requestCount > MAX_REQUESTS_PER_MINUTES) {
+                if (isRateLimitExceeded(rateLimit)) {
                     response.sendError(HttpServletResponse.SC_REQUEST_TIMEOUT, "Too many requests");
                     return;
                 }
@@ -45,6 +56,23 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private boolean isExcludedPath(String path) {
+        return path.contains("/error") || path.contains("/handle-error");
+    }
+
+    private boolean isTimeFrameExpired(RateLimit rateLimit, long currentTime) {
+        return currentTime - rateLimit.lastRequestTime > TIME_FRAME_MS;
+    }
+
+    private void resetRateLimit(RateLimit rateLimit, long currentTime) {
+        rateLimit.lastRequestTime = currentTime;
+        rateLimit.requestCount = 1;
+    }
+
+    private boolean isRateLimitExceeded(RateLimit rateLimit) {
+        return rateLimit.requestCount > MAX_REQUESTS_PER_MINUTES;
     }
 
     private static class RateLimit {
