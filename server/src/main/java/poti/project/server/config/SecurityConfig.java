@@ -20,7 +20,8 @@ import poti.project.server.components.RateLimitingFilter;
 /**
  * This is the web security configuration for the application.
  * It is used to configure the security settings for the application. It
- * implements different security settings such as Anti-DDos , CSRF protection,
+ * implements different security settings such as Anti-DDos, CSRF protection,
+ * Xss protection and csp protection.
  * and authentication.
  * 
  * @author William Beaudin
@@ -41,10 +42,9 @@ public class SecurityConfig {
                                 .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
                                 .csrf(csrf -> csrf
                                                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                                                .ignoringRequestMatchers("/api/**", "/actuator/**"))
+                                                .ignoringRequestMatchers("/api/**"))
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers("/api/**").access(this::checkServerRequest)
-                                                .requestMatchers("/actuator/**").permitAll()
                                                 .requestMatchers("/**").permitAll()
                                                 .anyRequest().denyAll())
                                 .headers(headers -> headers
@@ -57,7 +57,13 @@ public class SecurityConfig {
                                                                 .preload(true))
                                                 .contentSecurityPolicy(csp -> csp
                                                                 .policyDirectives(
-                                                                                "default-src 'self'; script-src 'self'")));
+                                                                                "default-src 'self'; " +
+                                                                                                "img-src * data:; " +
+                                                                                                "script-src 'self'; " +
+                                                                                                "style-src 'self'; " +
+                                                                                                "frame-ancestors 'self'; "
+                                                                                                +
+                                                                                                "base-uri 'self';")));
                 return http.build();
         }
 

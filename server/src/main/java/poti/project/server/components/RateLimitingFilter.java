@@ -15,9 +15,8 @@ import jakarta.servlet.http.HttpServletResponse;
 /**
  * 
  * The filter is used to handle Ddos attacks. It checks if the request is coming
- * from a known ip address. If it is, it will compare the latest request time
- * with the time of the current request. If the request time is within the last
- * 10ms , it will block the request.
+ * from a known ip address. If it is, it will then add the ip address to a MAP
+ * to then compare it to the current request later.
  * 
  * @apiNote This filter is used to handle therequests to the server. It checks
  *          if the request has been spamming the server, it does not prevent the

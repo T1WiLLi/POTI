@@ -5,7 +5,7 @@ function Home() {
         <Container fluid className="d-flex flex-column vh-100 justify-content-center align-items-center bg-dark text-white">
             <Row>
                 <Col className="text-center">
-                    <h1 className="display-1">Poti</h1>
+                    <h1 className="display-1">Poti TGC</h1>
                     <p className="lead mt-3">Arrive bientôt...</p>
                 </Col>
             </Row>
